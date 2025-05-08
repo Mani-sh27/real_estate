@@ -2,20 +2,27 @@ const chokidar = require('chokidar');
 const simpleGit = require('simple-git');
 const git = simpleGit();
 
+let timeout;
+
 const watcher = chokidar.watch('.', {
-  ignored: /(^|[\/\\])\../, // ignore dotfiles
+  ignored: /(^|[\/\\])\../, // Ignore dotfiles
   persistent: true,
   ignoreInitial: true
 });
 
-watcher.on('all', async (event, path) => {
-  try {
-    console.log(`Detected change: ${event} on ${path}`);
-    await git.add('.');
-    await git.commit('Auto-commit on file change');
-    await git.push('origin', 'master'); // change to 'master' if that's your branch
-    console.log('Changes pushed to GitHub.');
-  } catch (err) {
-    console.error('Git error:', err.message);
-  }
+watcher.on('all', (event, path) => {
+  console.log(`📦 Detected change: ${event} on ${path}`);
+  clearTimeout(timeout);
+
+  // Wait 10 seconds before committing and pushing
+  timeout = setTimeout(async () => {
+    try {
+      await git.add('.');
+      await git.commit('🚀 Daily auto-update', ['--amend', '--no-edit']); // overwrite previous
+      await git.push('origin', 'master', { '--force': null }); // force push updated commit
+      console.log('✅ Code updated in single commit!');
+    } catch (err) {
+      console.error('❌ Git error:', err.message);
+    }
+  }, 10000); // 10 seconds
 });
