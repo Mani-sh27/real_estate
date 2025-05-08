@@ -18,7 +18,8 @@ watcher.on('all', (event, path) => {
   timeout = setTimeout(async () => {
     try {
       await git.add('.');
-      await git.commit('🚀 Daily auto-update', ['--amend', '--no-edit']); // overwrite previous
+      await git.commit('🚀 Daily auto-update', ['--amend', '--no-edit', '--allow-empty']);
+      // overwrite previous
       await git.push('origin', 'master', { '--force': null }); // force push updated commit
       console.log('✅ Code updated in single commit!');
     } catch (err) {
